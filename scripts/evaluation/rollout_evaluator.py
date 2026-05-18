@@ -272,13 +272,15 @@ def evaluate_policy_on_task(
 
     model.eval()
     successes = []
+    failed_videos_saved = 0
 
     for ep in range(num_episodes):
         print(f"    Episode {ep+1:02d}/{num_episodes}: reset", flush=True)
         video_writer = None
         video_path = None
-        should_save_video = save_video and ep < max(video_episodes_to_save, 0)
-        if should_save_video:
+        # Record every episode; keep only failed ones (up to video_episodes_to_save)
+        should_record = save_video and failed_videos_saved < max(video_episodes_to_save, 0)
+        if should_record:
             import imageio.v2 as imageio
 
             video_name = (
@@ -393,8 +395,14 @@ def evaluate_policy_on_task(
 
         if video_writer is not None:
             video_writer.close()
-            if video_path is not None:
-                print(f"    Saved video: {video_path}")
+            if episode_success:
+                # Delete video for successful episodes — we only want failures
+                if video_path is not None and video_path.exists():
+                    video_path.unlink()
+            else:
+                failed_videos_saved += 1
+                if video_path is not None:
+                    print(f"    Saved failure video: {video_path}")
 
     env.close()
 

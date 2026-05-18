@@ -41,7 +41,7 @@ from scripts.evaluation import (
 from libero.libero.benchmark import get_benchmark
 
 
-def main(cfg, task_indices: list):
+def main(cfg, task_indices: list, video_only: bool = False):
     device = torch.device(cfg.get("device", "cuda"))
     seed = cfg.get("seed", 42)
     torch.manual_seed(seed)
@@ -111,7 +111,7 @@ def main(cfg, task_indices: list):
             print(f"[skip] Checkpoint not found: {ckpt_path}")
             continue
 
-        if not np.all(np.isnan(perf_matrix[task_k, :task_k + 1])):
+        if not video_only and not np.all(np.isnan(perf_matrix[task_k, :task_k + 1])):
             print(f"[skip] Task {task_k} already evaluated")
             continue
 
@@ -124,6 +124,9 @@ def main(cfg, task_indices: list):
         model.load_state_dict(ckpt_data["model_state_dict"], strict=True)
         model.eval()
 
+        video_cfg = eval_cfg.get("video", {})
+        save_video = video_only or eval_cfg.get("save_video", False)
+        video_dir = str(results_dir / "videos" / f"after_task_{task_k:02d}") if save_video else None
         eval_results = evaluate_checkpoint_on_all_tasks(
             model=model, benchmark=benchmark,
             task_indices=list(range(task_k + 1)),
@@ -139,6 +142,10 @@ def main(cfg, task_indices: list):
             use_ddim=False,
             ddim_steps=eval_cfg.get("num_flow_steps", 10),
             seed=seed,
+            save_video=save_video,
+            video_dir=video_dir,
+            video_fps=video_cfg.get("fps", 20),
+            video_episodes_to_save=video_cfg.get("episodes_to_save", 3),
         )
         del model
 
@@ -161,7 +168,7 @@ def main(cfg, task_indices: list):
 
     # Save final metrics once all lower-triangle cells are filled
     tril_mask = np.tril(np.ones((n_tasks, n_tasks), dtype=bool))
-    if not np.any(np.isnan(perf_matrix[tril_mask])):
+    if not video_only and not np.any(np.isnan(perf_matrix[tril_mask])):
         nbt_final = compute_nbt(perf_matrix)
         avg_sr_final = compute_average_sr(perf_matrix)
         print(f"\nFINAL: Avg SR = {avg_sr_final:.4f}  |  NBT = {nbt_final:.4f}")
@@ -187,6 +194,8 @@ if __name__ == "__main__":
                         help="Task index to evaluate (can repeat: --task 0 --task 1)")
     parser.add_argument("--all", action="store_true",
                         help="Evaluate all available checkpoints in the checkpoint dir")
+    parser.add_argument("--video-only", action="store_true",
+                        help="Save videos only, skip saving results/heatmaps")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -207,4 +216,4 @@ if __name__ == "__main__":
     else:
         parser.error("Specify at least one --task K or use --all")
 
-    main(cfg, task_indices)
+    main(cfg, task_indices, video_only=args.video_only)
