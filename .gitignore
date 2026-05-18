@@ -4,6 +4,7 @@ output/
 results/
 data/
 logs/
+scripts/submit/
 __pycache__/
 *.pyc
 *.pyo

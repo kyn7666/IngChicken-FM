@@ -164,12 +164,14 @@ def plot_performance_matrix(
 
     N = perf_matrix.shape[0]
 
-    display_matrix = perf_matrix.copy()
-    mask = np.isnan(display_matrix)
-    display_matrix[mask] = 0.0
+    mask = np.isnan(perf_matrix)
+    display_matrix = np.ma.masked_where(mask, perf_matrix)
+    cmap = plt.cm.get_cmap("RdYlGn").copy()
+    cmap.set_bad(color="white")
 
-    fig, ax = plt.subplots(1, 1, figsize=(10, 8))
-    im = ax.imshow(display_matrix, cmap="RdYlGn", vmin=0, vmax=1, aspect="auto")
+    fig, ax = plt.subplots(1, 1, figsize=(10, 8), facecolor="white")
+    ax.set_facecolor("white")
+    im = ax.imshow(display_matrix, cmap=cmap, vmin=0, vmax=1, aspect="auto")
 
     for i in range(N):
         for j in range(N):
@@ -210,7 +212,7 @@ def plot_performance_matrix(
 
     plt.tight_layout()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    plt.savefig(save_path, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close()
     print(f"Heatmap saved to {save_path}")
 

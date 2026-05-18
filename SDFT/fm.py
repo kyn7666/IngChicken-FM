@@ -124,8 +124,8 @@ def collect_onpolicy_observations(
 
     Uses Euler integration (not DDIM) for inference.
     """
-    os.environ.setdefault("MUJOCO_GL", "osmesa")
-    os.environ.setdefault("PYOPENGL_PLATFORM", "osmesa")
+    os.environ["MUJOCO_GL"] = "osmesa"
+    os.environ["PYOPENGL_PLATFORM"] = "osmesa"
     if "NUMBA_CACHE_DIR" not in os.environ:
         cache_dir = "/tmp/numba_cache"
         os.makedirs(cache_dir, exist_ok=True)

@@ -9,6 +9,7 @@ benchmark:
   task_order_index: 0
   data_root: "/scratch2/kyn7666/libero_data"
 
+
 data:
   obs_horizon: 2
   action_horizon: 16

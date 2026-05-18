@@ -84,15 +84,17 @@ def main(cfg, task_indices: list, video_only: bool = False):
     if use_wandb:
         first_ckpt = ckpt_dir / f"after_task_{task_indices[0]:02d}.pt"
         if first_ckpt.exists():
-            meta = torch.load(first_ckpt, map_location="cpu", weights_only=False)
+            meta = torch.load(first_ckpt, map_location="cpu")
             wandb_run_id = meta.get("wandb_run_id")
         try:
             import wandb
             date_str = datetime.now().strftime("%m%d%H%M")
             run_name = f"{wandb_cfg['name']}_eval_{date_str}"
+            use_fixed_steps = cfg.get("training", {}).get("steps_per_epoch") is not None
+            wandb_project = wandb_cfg["project"] + ("-step" if use_fixed_steps else "")
             wandb.init(
                 entity=wandb_cfg["entity"],
-                project=wandb_cfg["project"],
+                project=wandb_project,
                 group=wandb_cfg.get("group"),
                 name=run_name,
                 tags=wandb_cfg.get("tags", []),
@@ -119,7 +121,7 @@ def main(cfg, task_indices: list, video_only: bool = False):
         print(f"EVAL after task {task_k}: {task_names[task_k]}")
         print(f"{'='*70}")
 
-        ckpt_data = torch.load(ckpt_path, map_location=device, weights_only=False)
+        ckpt_data = torch.load(ckpt_path, map_location=device)
         model = FlowPolicy(cfg).to(device)
         model.load_state_dict(ckpt_data["model_state_dict"], strict=True)
         model.eval()

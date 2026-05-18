@@ -1,14 +1,13 @@
-# Flow Matching CL baseline (ER only) — LIBERO-Goal
+# Flow Matching CL + FM-SDFT (no ER) — LIBERO-Long
 
 seed: 42
 device: "cuda"
 weights_dir: ""
 
 benchmark:
-  name: "libero_goal"
+  name: "libero_10"
   task_order_index: 0
-  data_root: "/scratch2/kyn7666/libero_data"
-
+  data_root: "/workspace/data"
 
 data:
   obs_horizon: 2
@@ -56,31 +55,42 @@ training:
 
 evaluation:
   num_episodes: 20
-  max_steps_per_episode: 500
+  max_steps_per_episode: 600
   action_execution_horizon: 8
   num_flow_steps: 10
   save_video: false
 
 replay:
-  enabled: true
+  enabled: false
   buffer_size: 1000
   mix_ratio: 0.5
 
+sdft:
+  enabled: true
+  weight: 0.3
+  num_flow_steps: 10
+  num_episodes: 5
+  max_steps_per_episode: 1000
+  max_states: 200
+  batch_size: 16
+
 logging:
-  project: "flow_policy_cl_libero_goal"
+  project: "flow_policy_cl_libero_long_sdft_noer"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_goal_er"
-  results_dir: "results/cl_goal_er"
+  checkpoint_dir: "checkpoints/cl_long_sdft_noer"
+  results_dir: "results/cl_long_sdft_noer"
   use_tensorboard: true
 
 wandb:
   enabled: true
   entity: "ingchicken"
-  project: "baseline"
-  group: "goal"
-  name: "er-only_seed0"
+  project: "sdft"
+  group: "long"
+  name: "sdft - long"
   tags:
-    - "goal"
-    - "er-only"
+    - "long"
+    - "sdft-fm"
+    - "no-er"
+    - "lambda0.3"
   resume: "allow"

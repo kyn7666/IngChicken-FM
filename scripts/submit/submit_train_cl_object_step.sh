@@ -57,5 +57,5 @@ EOF
 
 echo "Submitted: FM step CL training (LIBERO-Object)"
 echo "  Logs:        ${BASE}/logs/cl_obj_step_train_<JOBID>.{out,err}"
-echo "  Checkpoints: ${BASE}/checkpoints/cl_object_pt/"
-echo "  Results:     ${BASE}/results/cl_object_pt/"
+echo "  Checkpoints: ${BASE}/checkpoints/cl_object_naive_step/"
+echo "  Results:     ${BASE}/results/cl_object_naive_step/"

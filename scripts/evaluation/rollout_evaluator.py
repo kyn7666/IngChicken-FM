@@ -224,11 +224,10 @@ def evaluate_policy_on_task(
     save_video: bool = False,
     video_dir: str = None,
     video_fps: int = 20,
-    video_episodes_to_save: int = 1,
     video_camera_key: str = "agentview_image",
 ) -> tuple:
-    os.environ.setdefault("MUJOCO_GL", "osmesa")
-    os.environ.setdefault("PYOPENGL_PLATFORM", "osmesa")
+    os.environ["MUJOCO_GL"] = "osmesa"
+    os.environ["PYOPENGL_PLATFORM"] = "osmesa"
 
     if "NUMBA_CACHE_DIR" not in os.environ:
         cache_dir = "/tmp/numba_cache"
@@ -430,7 +429,6 @@ def evaluate_checkpoint_on_all_tasks(
     save_video: bool = False,
     video_dir: str = None,
     video_fps: int = 20,
-    video_episodes_to_save: int = 1,
     video_camera_key: str = "agentview_image",
 ) -> dict:
     results = {}
@@ -459,7 +457,6 @@ def evaluate_checkpoint_on_all_tasks(
             save_video=save_video,
             video_dir=video_dir,
             video_fps=video_fps,
-            video_episodes_to_save=video_episodes_to_save,
             video_camera_key=video_camera_key,
         )
         results[task_idx] = sr
