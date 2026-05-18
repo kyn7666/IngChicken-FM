@@ -4,7 +4,7 @@ seed: 42
 device: "cuda"
 
 data:
-  data_dir: "/workspace/data/libero90"
+  data_dir: "/scratch2/kyn7666/libero_data/libero_90"
   obs_horizon: 2
   action_horizon: 16
   action_dim: 7
@@ -16,9 +16,9 @@ data:
   image_size: [128, 128]
   obs_keys:
     - "agentview_image"
-    - "robot0_eef_pos"
-    - "robot0_eef_quat"
-    - "robot0_gripper_qpos"
+    - "ee_pos"
+    - "ee_ori"
+    - "gripper_states"
 
 vision_encoder:
   type: "resnet18"
@@ -38,7 +38,7 @@ unet:
   cond_predict_scale: true
 
 training:
-  num_epochs: 500
+  num_epochs: 400
   learning_rate: 1.0e-4
   steps_per_epoch: 110
   weight_decay: 1.0e-6
@@ -51,16 +51,16 @@ training:
 logging:
   project: "flow_policy_libero90_pretrain"
   log_interval: 100
-  save_interval: 10
-  checkpoint_dir: "checkpoints/pretrain_fm"
+  save_interval: 100
+  checkpoint_dir: "checkpoints/pretrain_fm_step"
   use_tensorboard: false
 
 wandb:
   enabled: true
   entity: "ingchicken"
-  project: "pretrain"
+  project: "pretrain_step"
   group: "pretrain"
-  name: "pretrain_seed0"
+  name: "pretrain_step_seed0"
   tags:
     - "pretrain"
   resume: "allow"

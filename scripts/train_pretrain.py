@@ -133,13 +133,21 @@ def train(cfg):
     print("Building dataset (LIBERO-90)...")
     print("=" * 60)
 
+    configured_steps_per_epoch = train_cfg.get("steps_per_epoch")
+    if configured_steps_per_epoch is not None:
+        samples_per_epoch = int(configured_steps_per_epoch) * data_cfg["batch_size"]
+        print(f"Step-based training: {configured_steps_per_epoch} steps/epoch "
+              f"(samples_per_epoch={samples_per_epoch})")
+    else:
+        samples_per_epoch = data_cfg.get("samples_per_epoch")
+
     loader, dataset = create_dataloader(
         data_dir=data_cfg["data_dir"],
         batch_size=data_cfg["batch_size"],
         num_workers=data_cfg["num_workers"],
         obs_horizon=data_cfg["obs_horizon"],
         action_horizon=data_cfg["action_horizon"],
-        samples_per_epoch=data_cfg.get("samples_per_epoch"),
+        samples_per_epoch=samples_per_epoch,
         normalize_action=data_cfg.get("normalize_action", True),
         use_eye_in_hand=data_cfg.get("use_eye_in_hand", True),
         image_size=tuple(data_cfg.get("image_size", [128, 128])),

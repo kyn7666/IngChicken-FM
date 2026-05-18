@@ -7,7 +7,7 @@ weights_dir: ""
 benchmark:
   name: "libero_goal"
   task_order_index: 0
-  data_root: "/workspace/data"
+  data_root: "/scratch2/kyn7666/libero_data"
 
 data:
   obs_horizon: 2
@@ -55,7 +55,7 @@ training:
 
 evaluation:
   num_episodes: 20
-  max_steps_per_episode: 600
+  max_steps_per_episode: 500
   action_execution_horizon: 8
   num_flow_steps: 10
   save_video: false
@@ -70,7 +70,7 @@ sdft:
   weight: 0.3
   num_flow_steps: 10
   num_episodes: 5
-  max_steps_per_episode: 600
+  max_steps_per_episode: 500
   max_states: 200
   batch_size: 16
 

@@ -167,6 +167,7 @@ def _get_video_frame(obs: dict, camera_key: str):
     if frame.ndim == 3 and frame.shape[-1] == 1:
         frame = np.repeat(frame, 3, axis=-1)
 
+    frame = np.rot90(frame, 2)
     return frame
 
 

@@ -97,7 +97,7 @@ def main(cfg, task_indices: list):
                 name=run_name,
                 tags=wandb_cfg.get("tags", []),
                 config=cfg,
-                resume="must" if wandb_run_id else "never",
+                resume="allow" if wandb_run_id else "allow",
                 id=wandb_run_id if wandb_run_id else None,
             )
             print(f"wandb run: {run_name}  (id={wandb.run.id})")
