@@ -91,7 +91,7 @@ wandb:
   entity: "ingchicken"
   project: "clip-sdft"
   group: "object"
-  name: "object_clip_l0.1_s220_seed0"
+  name: "pt_sdft_object_clip_l0.1_s220_seed0"
   tags:
     - "object"
     - "sdft-fm"

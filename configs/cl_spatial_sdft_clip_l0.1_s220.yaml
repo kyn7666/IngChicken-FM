@@ -91,7 +91,7 @@ wandb:
   entity: "ingchicken"
   project: "clip-sdft"
   group: "spatial"
-  name: "spatial_clip_l0.1_s220_seed0"
+  name: "pt_sdft_spatial_clip_l0.1_s220_seed0"
   tags:
     - "spatial"
     - "sdft-fm"

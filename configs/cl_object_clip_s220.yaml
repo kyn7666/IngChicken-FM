@@ -82,7 +82,7 @@ wandb:
   entity: "ingchicken"
   project: "clip-baseline"
   group: "object"
-  name: "object_clip_pt_s220_seed0"
+  name: "pt_object_clip_s220_seed0_train"
   tags:
     - "object"
     - "pt"

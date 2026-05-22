@@ -82,7 +82,7 @@ wandb:
   entity: "ingchicken"
   project: "clip-baseline"
   group: "spatial"
-  name: "spatial_clip_pt_s220_seed0"
+  name: "pt_spatial_clip_s220_seed0_train"
   tags:
     - "spatial"
     - "pt"

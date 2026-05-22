@@ -91,7 +91,7 @@ wandb:
   entity: "ingchicken"
   project: "clip-sdft"
   group: "goal"
-  name: "goal_clip_l0.1_s220_seed0"
+  name: "pt_sdft_goal_clip_l0.1_s220_seed0"
   tags:
     - "goal"
     - "sdft-fm"
