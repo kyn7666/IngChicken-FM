@@ -1,8 +1,8 @@
-# Flow Matching CL baseline (Naive — no pretrain, no ER) — LIBERO-10
+# Flow Matching CL + FM-SDFT + CLIP — LIBERO-Long
 
 seed: 42
 device: "cuda"
-weights_dir: ""
+weights_dir: "checkpoints/pretrain_fm_clip_1000ep/best_ema.pt"
 
 benchmark:
   name: "libero_10"
@@ -23,6 +23,10 @@ data:
     - "ee_pos"
     - "ee_ori"
     - "gripper_states"
+  clip_emb_path: "data/clip_embeddings/libero_10.pt"
+
+model:
+  task_emb_dim: 128
 
 vision_encoder:
   type: "resnet18"
@@ -46,7 +50,7 @@ continual_learning:
 training:
   learning_rate: 1.0e-4
   finetune_learning_rate: 1.0e-4
-  steps_per_epoch: 110
+  steps_per_epoch: 220
   weight_decay: 1.0e-6
   lr_warmup_steps: 500
   ema_decay: 0.995
@@ -61,25 +65,35 @@ evaluation:
   save_video: false
 
 replay:
-  enabled: false
+  enabled: true
   buffer_size: 1000
   mix_ratio: 0.5
 
+sdft:
+  enabled: true
+  weight: 0.1
+  num_flow_steps: 10
+  num_episodes: 5
+  max_steps_per_episode: 500
+  max_states: 200
+  batch_size: 16
+
 logging:
-  project: "flow_policy_cl_libero_long"
+  project: "flow_policy_cl_libero_long_sdft"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_long_pt"
-  results_dir: "results/cl_long_pt"
+  checkpoint_dir: "checkpoints/cl_long_sdft_clip_l0.1_s220"
+  results_dir: "results_step/cl_long_sdft_clip_l0.1_s220"
   use_tensorboard: true
 
 wandb:
   enabled: true
   entity: "ingchicken"
-  project: "baseline"
+  project: "clip-sdft"
   group: "long"
-  name: "naive_seed0"
+  name: "clip_lambda0.1_s220_seed0"
   tags:
     - "long"
-    - "naive"
+    - "sdft-fm"
+    - "clip"
   resume: "allow"

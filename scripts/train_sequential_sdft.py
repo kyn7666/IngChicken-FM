@@ -139,7 +139,7 @@ def _load_initial_weights(model: FlowPolicy, cfg: dict, device: torch.device):
     if weights_path is None:
         print("Training mode: scratch")
         return None
-    checkpoint = torch.load(weights_path, map_location=device)
+    checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
     state_dict = checkpoint.get("model_state_dict", checkpoint)
     model_state = model.state_dict()
     compatible = {k: v for k, v in state_dict.items()
@@ -248,6 +248,7 @@ def train_on_task(
     teacher: FlowPolicy = None,
     sdft_collected: list = None,
     use_wandb: bool = False,
+    task_embeddings: dict = None,
 ) -> tuple:
     data_cfg = cfg["data"]
     train_cfg = cfg["training"]
@@ -280,6 +281,7 @@ def train_on_task(
         current_batch_size, replay_batch_size = split_batch_size(data_cfg["batch_size"], mix_ratio)
         replay_loader = replay_memory.build_loader(
             cfg=cfg, action_mean=action_mean, action_std=action_std, batch_size=replay_batch_size,
+            task_embeddings=task_embeddings,
         )
         if replay_loader is not None:
             replay_iterator = cycle(replay_loader)
@@ -287,6 +289,7 @@ def train_on_task(
                   f"{replay_memory.num_tasks()} task(s)  "
                   f"[cur={current_batch_size}, rep={replay_batch_size}]")
 
+    task_emb = task_embeddings.get(task_name) if task_embeddings else None
     print(f"  Loading dataset: {demo_path}")
     loader, dataset = create_single_task_dataloader(
         hdf5_path=demo_path, batch_size=current_batch_size,
@@ -297,6 +300,7 @@ def train_on_task(
         obs_keys=data_cfg["obs_keys"], use_eye_in_hand=data_cfg.get("use_eye_in_hand", True),
         image_size=tuple(data_cfg.get("image_size", [128, 128])),
         samples_per_epoch=steps_per_epoch * current_batch_size if use_configured_steps else None,
+        task_emb=task_emb,
     )
     if not use_configured_steps:
         steps_per_epoch = len(loader)
@@ -487,6 +491,12 @@ def main(cfg, skip_eval=False, pretrain_ckpt=None):
     print("Computing global action normalization stats...")
     action_mean, action_std = compute_global_action_stats(data_root, benchmark)
 
+    clip_emb_path = data_cfg.get("clip_emb_path")
+    task_embeddings = None
+    if clip_emb_path:
+        task_embeddings = torch.load(clip_emb_path, map_location="cpu", weights_only=False)
+        print(f"Loaded CLIP embeddings: {len(task_embeddings)} tasks from {clip_emb_path}")
+
     print("\nBuilding Flow Matching Policy...")
     model = FlowPolicy(cfg).to(device)
     init_weights_path = _load_initial_weights(model, cfg, device)
@@ -543,7 +553,7 @@ def main(cfg, skip_eval=False, pretrain_ckpt=None):
             demo_path=demo_path, cfg=cfg, action_mean=action_mean, action_std=action_std,
             device=device, tb_writer=tb_writer, tb_global_step_offset=tb_global_step,
             replay_memory=replay_memory, teacher=teacher, sdft_collected=sdft_collected,
-            use_wandb=use_wandb,
+            use_wandb=use_wandb, task_embeddings=task_embeddings,
         )
         tb_global_step += task_steps
 
@@ -553,7 +563,7 @@ def main(cfg, skip_eval=False, pretrain_ckpt=None):
             torch.cuda.empty_cache()
 
         if replay_memory is not None:
-            replay_memory.add_task(demo_path, task_dataset.index)
+            replay_memory.add_task(demo_path, task_dataset.index, task_name=task_names[task_k])
             print(f"  Replay buffer: {replay_memory.num_samples()} samples / "
                   f"{replay_memory.num_tasks()} task(s)")
         del task_dataset
@@ -602,6 +612,7 @@ def main(cfg, skip_eval=False, pretrain_ckpt=None):
                 seed=seed,
                 save_video=eval_cfg.get("save_video", False),
                 video_dir=str(results_dir / "videos" / f"stage_{task_k:02d}"),
+                task_embeddings=task_embeddings,
             )
             eval_time = time.time() - t_eval
 

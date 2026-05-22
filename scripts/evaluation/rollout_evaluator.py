@@ -116,6 +116,7 @@ def obs_buffer_to_batch(
     use_eye_in_hand: bool,
     device: torch.device,
     low_dim_keys: list = None,
+    task_emb: torch.Tensor = None,
 ) -> dict:
     if low_dim_keys is None:
         low_dim_keys = ["ee_pos", "ee_ori", "gripper_states"]
@@ -138,6 +139,9 @@ def obs_buffer_to_batch(
         if key in buf_list[0]:
             data = np.stack([o[key] for o in buf_list])
             batch[f"obs_{key}"] = torch.from_numpy(data).unsqueeze(0).to(device)
+
+    if task_emb is not None:
+        batch["task_emb"] = task_emb.unsqueeze(0).to(device)
 
     return batch
 
@@ -225,6 +229,8 @@ def evaluate_policy_on_task(
     video_dir: str = None,
     video_fps: int = 20,
     video_camera_key: str = "agentview_image",
+    video_episodes_to_save: int = 3,
+    task_emb: torch.Tensor = None,
 ) -> tuple:
     os.environ["MUJOCO_GL"] = "osmesa"
     os.environ["PYOPENGL_PLATFORM"] = "osmesa"
@@ -337,6 +343,7 @@ def evaluate_policy_on_task(
                 use_eye_in_hand=use_eye_in_hand,
                 device=device,
                 low_dim_keys=low_dim_keys,
+                task_emb=task_emb,
             )
 
             if use_ddim:
@@ -430,13 +437,15 @@ def evaluate_checkpoint_on_all_tasks(
     video_dir: str = None,
     video_fps: int = 20,
     video_camera_key: str = "agentview_image",
+    video_episodes_to_save: int = 3,
+    task_embeddings: dict = None,
 ) -> dict:
+    task_names = benchmark.get_task_names()
     results = {}
     for task_idx in task_indices:
-        print(
-            f"\n  Evaluating task {task_idx}: "
-            f"{benchmark.get_task_names()[task_idx]}"
-        )
+        task_name = task_names[task_idx]
+        print(f"\n  Evaluating task {task_idx}: {task_name}")
+        task_emb = task_embeddings.get(task_name) if task_embeddings else None
         sr, _ = evaluate_policy_on_task(
             model=model,
             benchmark=benchmark,
@@ -458,6 +467,8 @@ def evaluate_checkpoint_on_all_tasks(
             video_dir=video_dir,
             video_fps=video_fps,
             video_camera_key=video_camera_key,
+            video_episodes_to_save=video_episodes_to_save,
+            task_emb=task_emb,
         )
         results[task_idx] = sr
         print(f"    Success Rate: {sr:.4f}")

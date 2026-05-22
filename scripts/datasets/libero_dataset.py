@@ -34,6 +34,7 @@ class LiberoUniformDataset(Dataset):
         use_eye_in_hand: bool = True,
         normalize_action: bool = True,
         max_episodes_per_task: Optional[int] = None,
+        task_embeddings: Optional[Dict[str, torch.Tensor]] = None,
     ):
         self.obs_horizon = obs_horizon
         self.action_horizon = action_horizon
@@ -49,6 +50,7 @@ class LiberoUniformDataset(Dataset):
                 "robot0_gripper_qpos",
             ]
         self.obs_keys = obs_keys
+        self.task_embeddings = task_embeddings  # {task_name: tensor(512)} or None
 
         hdf5_files = sorted(glob.glob(os.path.join(data_dir, "**/*.hdf5"), recursive=True))
         if not hdf5_files:
@@ -182,6 +184,14 @@ class LiberoUniformDataset(Dataset):
             result["obs_eye_in_hand_image"] = torch.from_numpy(obs_data)
 
         result["task_id"] = torch.tensor(task_idx, dtype=torch.long)
+
+        if self.task_embeddings is not None:
+            task_name = self.task_data[task_idx]["name"]
+            # HDF5 filenames have _demo suffix; CLIP keys don't
+            lookup_name = task_name[:-5] if task_name.endswith("_demo") else task_name
+            if lookup_name in self.task_embeddings:
+                result["task_emb"] = self.task_embeddings[lookup_name]
+
         return result
 
 

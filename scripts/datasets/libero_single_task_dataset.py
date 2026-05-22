@@ -34,6 +34,7 @@ class SingleTaskDataset(Dataset):
         use_eye_in_hand: bool = True,
         action_mean: Optional[np.ndarray] = None,
         action_std: Optional[np.ndarray] = None,
+        task_emb: Optional[torch.Tensor] = None,
     ):
         self.obs_horizon = obs_horizon
         self.action_horizon = action_horizon
@@ -41,6 +42,7 @@ class SingleTaskDataset(Dataset):
         self.use_eye_in_hand = use_eye_in_hand
         self.action_mean = action_mean
         self.action_std = action_std
+        self.task_emb = task_emb  # (512,) pre-computed CLIP embedding, or None
 
         if obs_keys is None:
             obs_keys = [
@@ -144,6 +146,9 @@ class SingleTaskDataset(Dataset):
             obs_data = obs_data.astype(np.float32) / 255.0
             obs_data = np.transpose(obs_data, (0, 3, 1, 2))
             result["obs_eye_in_hand_image"] = torch.from_numpy(obs_data)
+
+        if self.task_emb is not None:
+            result["task_emb"] = self.task_emb
 
         return result
 

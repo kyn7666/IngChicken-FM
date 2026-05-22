@@ -68,6 +68,12 @@ def main(cfg, task_indices: list, video_only: bool = False):
     print("Computing global action normalization stats...")
     action_mean, action_std = compute_global_action_stats(data_root, benchmark)
 
+    clip_emb_path = data_cfg.get("clip_emb_path")
+    task_embeddings = None
+    if clip_emb_path:
+        task_embeddings = torch.load(clip_emb_path, map_location="cpu", weights_only=False)
+        print(f"Loaded CLIP embeddings: {len(task_embeddings)} tasks from {clip_emb_path}")
+
     # Load or initialise the shared perf_matrix
     inter_path = results_dir / "perf_matrix_intermediate.npy"
     if inter_path.exists():
@@ -84,7 +90,7 @@ def main(cfg, task_indices: list, video_only: bool = False):
     if use_wandb:
         first_ckpt = ckpt_dir / f"after_task_{task_indices[0]:02d}.pt"
         if first_ckpt.exists():
-            meta = torch.load(first_ckpt, map_location="cpu")
+            meta = torch.load(first_ckpt, map_location="cpu", weights_only=False)
             wandb_run_id = meta.get("wandb_run_id")
         try:
             import wandb
@@ -121,7 +127,7 @@ def main(cfg, task_indices: list, video_only: bool = False):
         print(f"EVAL after task {task_k}: {task_names[task_k]}")
         print(f"{'='*70}")
 
-        ckpt_data = torch.load(ckpt_path, map_location=device)
+        ckpt_data = torch.load(ckpt_path, map_location=device, weights_only=False)
         model = FlowPolicy(cfg).to(device)
         model.load_state_dict(ckpt_data["model_state_dict"], strict=True)
         model.eval()
@@ -148,6 +154,7 @@ def main(cfg, task_indices: list, video_only: bool = False):
             video_dir=video_dir,
             video_fps=video_cfg.get("fps", 20),
             video_episodes_to_save=video_cfg.get("episodes_to_save", 3),
+            task_embeddings=task_embeddings,
         )
         del model
 

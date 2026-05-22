@@ -19,6 +19,10 @@ data:
     - "ee_pos"
     - "ee_ori"
     - "gripper_states"
+  clip_emb_path: "data/clip_embeddings/libero_90.pt"
+
+model:
+  task_emb_dim: 128
 
 vision_encoder:
   type: "resnet18"
@@ -38,13 +42,12 @@ unet:
   cond_predict_scale: true
 
 training:
-  num_epochs: 400
+  num_epochs: 1000
   learning_rate: 1.0e-4
-  steps_per_epoch: 110
   weight_decay: 1.0e-6
   lr_scheduler: "cosine"
-  lr_warmup_steps: 500
-  ema_decay: 0.995
+  lr_warmup_steps: 1000
+  ema_decay: 0.999
   gradient_clip: 1.0
   mixed_precision: true
 
@@ -52,7 +55,7 @@ logging:
   project: "flow_policy_libero90_pretrain"
   log_interval: 100
   save_interval: 100
-  checkpoint_dir: "checkpoints/pretrain_fm_step"
+  checkpoint_dir: "checkpoints/pretrain_fm_clip_1000ep"
   use_tensorboard: false
 
 wandb:
@@ -60,7 +63,7 @@ wandb:
   entity: "ingchicken"
   project: "pretrain_step"
   group: "pretrain"
-  name: "pretrain_step_seed0"
+  name: "pretrain_1000ep_clip_seed0"
   tags:
     - "pretrain"
   resume: "allow"

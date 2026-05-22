@@ -69,8 +69,8 @@ logging:
   project: "flow_policy_cl_libero_spatial"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_spatial"
-  results_dir: "results_step/cl_spatial"
+  checkpoint_dir: "checkpoints/cl_spatial_1000ep"
+  results_dir: "results_step/cl_spatial_1000ep"
   use_tensorboard: true
 
 wandb:
@@ -78,7 +78,7 @@ wandb:
   entity: "ingchicken"
   project: "baseline"
   group: "spatial"
-  name: "pt_seed0"
+  name: "pt_1000ep_seed0"
   tags:
     - "spatial"
     - "pt"

@@ -104,6 +104,7 @@ class ReplayTaskDataset(Dataset):
         use_eye_in_hand: bool = True,
         action_mean: Optional[np.ndarray] = None,
         action_std: Optional[np.ndarray] = None,
+        task_emb: Optional[torch.Tensor] = None,
     ):
         self.hdf5_path = hdf5_path
         self.obs_horizon = obs_horizon
@@ -112,6 +113,7 @@ class ReplayTaskDataset(Dataset):
         self.use_eye_in_hand = use_eye_in_hand
         self.action_mean = action_mean
         self.action_std = action_std
+        self.task_emb = task_emb
         self.sample_index = [tuple(idx) for idx in sample_index]
 
         if obs_keys is None:
@@ -234,6 +236,9 @@ class ReplayTaskDataset(Dataset):
             obs_data = np.transpose(obs_data, (0, 3, 1, 2))
             result["obs_eye_in_hand_image"] = torch.from_numpy(obs_data)
 
+        if self.task_emb is not None:
+            result["task_emb"] = self.task_emb
+
         return result
 
 
@@ -254,13 +259,15 @@ class ReplayMemory:
     def num_samples(self) -> int:
         return sum(len(entry["sample_index"]) for entry in self.entries)
 
-    def add_task(self, hdf5_path: str, sample_index: List[Tuple[int, int]]):
+    def add_task(self, hdf5_path: str, sample_index: List[Tuple[int, int]],
+                 task_name: str = None):
         if self.capacity <= 0 or len(sample_index) == 0:
             return
 
         self.entries.append(
             {
                 "hdf5_path": hdf5_path,
+                "task_name": task_name,
                 "all_index": [tuple(idx) for idx in sample_index],
                 "sample_index": [],
             }
@@ -293,6 +300,7 @@ class ReplayMemory:
         action_mean: np.ndarray,
         action_std: np.ndarray,
         batch_size: int,
+        task_embeddings: dict = None,
     ):
         if batch_size <= 0 or not self.has_samples():
             return None
@@ -302,6 +310,9 @@ class ReplayMemory:
         for entry in self.entries:
             if not entry["sample_index"]:
                 continue
+            task_emb = None
+            if task_embeddings and entry.get("task_name"):
+                task_emb = task_embeddings.get(entry["task_name"])
             datasets.append(
                 ReplayTaskDataset(
                     hdf5_path=entry["hdf5_path"],
@@ -313,6 +324,7 @@ class ReplayMemory:
                     image_size=tuple(data_cfg.get("image_size", [128, 128])),
                     action_mean=action_mean if data_cfg.get("normalize_action", True) else None,
                     action_std=action_std if data_cfg.get("normalize_action", True) else None,
+                    task_emb=task_emb,
                 )
             )
 

@@ -242,7 +242,14 @@ class FlowPolicy(nn.Module):
         else:
             self.eye_encoder = None
 
+        self.task_emb_dim = cfg.get("model", {}).get("task_emb_dim", 0)
+        if self.task_emb_dim > 0:
+            self.task_proj = nn.Linear(512, self.task_emb_dim)
+        else:
+            self.task_proj = None
+
         obs_feat_dim = (vis_dim * n_vis_streams + self.low_dim_size) * self.obs_horizon
+        obs_feat_dim += self.task_emb_dim
 
         unet_cfg = cfg["unet"]
         self.vector_field_net = ConditionalUNet1D(
@@ -279,6 +286,11 @@ class FlowPolicy(nn.Module):
 
         obs_cond = torch.cat(features, dim=-1)
         obs_cond = obs_cond.flatten(start_dim=1)
+
+        if self.task_proj is not None and "task_emb" in batch:
+            task_feat = self.task_proj(batch["task_emb"].to(obs_cond.device))
+            obs_cond = torch.cat([obs_cond, task_feat], dim=-1)
+
         return obs_cond
 
     def compute_loss(self, batch):

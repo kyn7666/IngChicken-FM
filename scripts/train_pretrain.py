@@ -141,6 +141,12 @@ def train(cfg):
     else:
         samples_per_epoch = data_cfg.get("samples_per_epoch")
 
+    clip_emb_path = data_cfg.get("clip_emb_path")
+    task_embeddings = None
+    if clip_emb_path:
+        task_embeddings = torch.load(clip_emb_path, map_location="cpu", weights_only=False)
+        print(f"Loaded CLIP embeddings: {len(task_embeddings)} tasks from {clip_emb_path}")
+
     loader, dataset = create_dataloader(
         data_dir=data_cfg["data_dir"],
         batch_size=data_cfg["batch_size"],
@@ -152,6 +158,7 @@ def train(cfg):
         use_eye_in_hand=data_cfg.get("use_eye_in_hand", True),
         image_size=tuple(data_cfg.get("image_size", [128, 128])),
         obs_keys=data_cfg.get("obs_keys"),
+        task_embeddings=task_embeddings,
     )
 
     print("=" * 60)

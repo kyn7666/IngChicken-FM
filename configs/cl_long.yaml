@@ -69,8 +69,8 @@ logging:
   project: "flow_policy_cl_libero_long"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_long"
-  results_dir: "results_step/cl_long"
+  checkpoint_dir: "checkpoints/cl_long_1000ep"
+  results_dir: "results_step/cl_long_1000ep"
   use_tensorboard: true
 
 wandb:
@@ -78,7 +78,7 @@ wandb:
   entity: "ingchicken"
   project: "baseline"
   group: "long"
-  name: "pt_seed0"
+  name: "pt_1000ep_seed0"
   tags:
     - "long"
     - "pt"
