@@ -119,6 +119,7 @@ def collect_onpolicy_observations(
     max_states: int = 200,
     seed: int = 42,
     log_debug: bool = False,
+    task_emb: Optional[torch.Tensor] = None,
 ) -> Tuple[List[Dict[str, torch.Tensor]], int]:
     """Run FlowPolicy in a task env; collect on-policy obs batches.
 
@@ -168,6 +169,7 @@ def collect_onpolicy_observations(
                 batch = obs_buffer_to_batch(
                     obs_buffer, obs_horizon, use_eye_in_hand, device,
                     low_dim_keys=low_dim_keys,
+                    task_emb=task_emb,
                 )
                 collected.append(clone_obs_batch(batch))
 

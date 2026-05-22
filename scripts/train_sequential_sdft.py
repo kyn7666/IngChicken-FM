@@ -199,6 +199,7 @@ def _collect_sdft_observations(
     *, model: FlowPolicy, benchmark, task_k: int, sdft_cfg: dict,
     eval_cfg: dict, data_cfg: dict, action_mean, action_std,
     low_dim_keys: list, device: torch.device, seed: int,
+    task_embeddings: dict = None,
 ) -> list:
     if task_k <= 0:
         return []
@@ -206,8 +207,13 @@ def _collect_sdft_observations(
     t0 = time.time()
     max_states_total = sdft_cfg.get("max_states", 200)
     states_per_task = max(1, max_states_total // task_k)
+    task_names = benchmark.get_task_names()
     all_collected = []
     for prev_task in range(task_k):
+        task_emb = None
+        if task_embeddings is not None:
+            task_name = task_names[prev_task]
+            task_emb = task_embeddings.get(task_name)
         prev_collected, _ = collect_onpolicy_observations(
             model=model, benchmark=benchmark, task_idx=prev_task,
             num_episodes=sdft_cfg.get("num_episodes", 5),
@@ -223,6 +229,7 @@ def _collect_sdft_observations(
             max_states=states_per_task,
             seed=seed + task_k * 100 + prev_task,
             log_debug=True,
+            task_emb=task_emb,
         )
         all_collected.extend(prev_collected)
     print(f"  [FM-SDFT] Collected {len(all_collected)} states in {time.time() - t0:.1f}s")
@@ -544,6 +551,7 @@ def main(cfg, skip_eval=False, pretrain_ckpt=None):
                 sdft_cfg=sdft_cfg, eval_cfg=eval_cfg, data_cfg=data_cfg,
                 action_mean=action_mean, action_std=action_std,
                 low_dim_keys=low_dim_keys, device=device, seed=seed,
+                task_embeddings=task_embeddings,
             )
             n_states = len(sdft_collected)
 
