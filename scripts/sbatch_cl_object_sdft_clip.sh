@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=cl_object_sdft_clip
-#SBATCH --partition=suma_a6000,gigabyte_a6000
+#SBATCH --partition=suma_a6000,gigabyte_a6000,gigabyte_a5000,asus_a5000
 #SBATCH --gres=gpu:1
 #SBATCH --exclude=node25,node28
 #SBATCH --cpus-per-task=8

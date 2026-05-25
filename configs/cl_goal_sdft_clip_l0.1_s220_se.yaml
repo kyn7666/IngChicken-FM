@@ -1,11 +1,11 @@
-# Flow Matching CL + FM-SDFT + CLIP — LIBERO-Object
+# Flow Matching CL + FM-SDFT + CLIP — LIBERO-Goal (skip-eval: train only, eval via eval_sequential)
 
 seed: 42
 device: "cuda"
 weights_dir: "checkpoints/pretrain_fm_clip_1000ep/best_ema.pt"
 
 benchmark:
-  name: "libero_object"
+  name: "libero_goal"
   task_order_index: 0
   data_root: "/scratch2/kyn7666/libero_data"
 
@@ -23,7 +23,7 @@ data:
     - "ee_pos"
     - "ee_ori"
     - "gripper_states"
-  clip_emb_path: "data/clip_embeddings/libero_object.pt"
+  clip_emb_path: "data/clip_embeddings/libero_goal.pt"
 
 model:
   task_emb_dim: 128
@@ -59,7 +59,7 @@ training:
 
 evaluation:
   num_episodes: 20
-  max_steps_per_episode: 500
+  max_steps_per_episode: 300
   action_execution_horizon: 8
   num_flow_steps: 10
   save_video: false
@@ -74,26 +74,27 @@ sdft:
   weight: 0.1
   num_flow_steps: 10
   num_episodes: 5
-  max_steps_per_episode: 500
+  max_steps_per_episode: 300
   max_states: 200
   batch_size: 16
 
 logging:
-  project: "flow_policy_cl_libero_object_sdft"
+  project: "flow_policy_cl_libero_goal_sdft"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_object_sdft_clip_l0.1_s220"
-  results_dir: "results_step/cl_object_sdft_clip_l0.1_s220"
+  checkpoint_dir: "checkpoints/cl_goal_sdft_clip_l0.1_s220_se"
+  results_dir: "results_step/cl_goal_sdft_clip_l0.1_s220_se"
   use_tensorboard: true
 
 wandb:
   enabled: true
   entity: "ingchicken"
   project: "clip-sdft"
-  group: "object"
-  name: "pt_sdft_object_clip_l0.1_s220_seed0"
+  group: "goal"
+  name: "pt_sdft_goal_clip_l0.1_s220_se_seed0"
   tags:
-    - "object"
+    - "goal"
     - "sdft-fm"
     - "clip"
+    - "skip-eval"
   resume: "allow"

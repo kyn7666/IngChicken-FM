@@ -1,4 +1,4 @@
-# Flow Matching CL + FM-SDFT + CLIP — LIBERO-Object
+# Flow Matching CL + FM-SDFT + CLIP — LIBERO-Object (skip-eval: train only, eval via eval_sequential)
 
 seed: 42
 device: "cuda"
@@ -59,7 +59,7 @@ training:
 
 evaluation:
   num_episodes: 20
-  max_steps_per_episode: 500
+  max_steps_per_episode: 300
   action_execution_horizon: 8
   num_flow_steps: 10
   save_video: false
@@ -74,7 +74,7 @@ sdft:
   weight: 0.1
   num_flow_steps: 10
   num_episodes: 5
-  max_steps_per_episode: 500
+  max_steps_per_episode: 300
   max_states: 200
   batch_size: 16
 
@@ -82,8 +82,8 @@ logging:
   project: "flow_policy_cl_libero_object_sdft"
   log_interval: 50
   exp_name: ""
-  checkpoint_dir: "checkpoints/cl_object_sdft_clip_l0.1_s220"
-  results_dir: "results_step/cl_object_sdft_clip_l0.1_s220"
+  checkpoint_dir: "checkpoints/cl_object_sdft_clip_l0.1_s220_se"
+  results_dir: "results_step/cl_object_sdft_clip_l0.1_s220_se"
   use_tensorboard: true
 
 wandb:
@@ -91,9 +91,10 @@ wandb:
   entity: "ingchicken"
   project: "clip-sdft"
   group: "object"
-  name: "pt_sdft_object_clip_l0.1_s220_seed0"
+  name: "pt_sdft_object_clip_l0.1_s220_se_seed0"
   tags:
     - "object"
     - "sdft-fm"
     - "clip"
+    - "skip-eval"
   resume: "allow"
